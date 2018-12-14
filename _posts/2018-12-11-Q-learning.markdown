@@ -122,7 +122,7 @@ Let's implement the algorithm in 3 steps
 
 #### Step 1. Set the hyperparameters and initialize the Q-table( the table consisting the Q-values of the actions)
 
-{% highlight ruby %}
+{% highlight python %}
 def main():
 	#Set the Learning rate
 	alpha=0.2
@@ -146,7 +146,7 @@ def main():
 
 #### Step 2. Play the game several times and update the Q-table.
 
-{% highlight ruby %}
+{% highlight python %}
 #Set the number of games
 numgames=100
 for i in range(numgames):
@@ -179,7 +179,7 @@ for i in range(numgames):
 
 #### Step 3. Print the Q-values learned, play the final game and observe the actions taken
 
-{% highlight ruby %}
+{% highlight python %}
 	print("Qvalues after playing ",numgames," games :")
 	print("	    	Actions")
 	print("		UP DOWN RIGHT LEFT")
@@ -247,7 +247,7 @@ We see that currently our algorithm is taking a path that goes through cell (1,1
  Now change the parameter numgames from 100 to 1000, and let's see if the agent learns something better after playing 1000 games.
  This is the output :
 
-{% highlight ruby %}
+{% highlight python %}
 Qvalues after playing  1000  games :
 	    	Actions
 		UP DOWN RIGHT LEFT
