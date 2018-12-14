@@ -7,12 +7,12 @@ author: Madhuparna Bhowmik
 ---
 
 In this article, we will learn about Q-learning and implement the algorithm from scratch. We will also make our own small board game to test the algorithm.
-### **What is Q-learning**
+## What is Q-learning
 
 Q-learning is an off-policy and model-free Reinforcement Learning algorithm.
 Model-free means that we need not know the details of the environment i.e how and with what probability the next state is being generated, given current state and action. And off-policy means action-value function, Q, directly approximates the optimal action-value function, independent of the policy being followed.
 
-### **Setting up the environment**
+## Setting up the environment
 
 Let us start by defining a simple problem and then we will see how it can be solved using Q-learning.
 Consider a simple board game, a $$3\times3$$ board with a Start cell and a Goal cell. We can also add a blocked cell to our board. Now, the goal is to learn a path from Start cell represented by S to Goal Cell represented by G without going into the blocked cell X.
@@ -38,7 +38,7 @@ Let's set the rewards now,
 
 3.A reward of -1 for all other actions.
 
-#### Why do you think we define the rewards in this way?
+### Why do you think we define the rewards in this way?
 
 Well +10 for the Goal obviously because that is a desirable state and our algorithm aims at maximizing the reward, so it should get a good amount of reward for completing the task.
 
@@ -53,7 +53,7 @@ Therefore choosing rewards carefully is important.
 
 Let's write the code for this game
 
-{% highlight ruby %}
+{% highlight python %}
 def game(state,action):
 	#Awarding 10 for reaching the goal
 	if state[0]==2 and state[1]==1 and action==3:
@@ -89,11 +89,12 @@ def game(state,action):
 			y=state[1]-1
 			if y<0:
 				y=0
-			return [-1,[x,y]]{% endhighlight %}
+			return [-1,[x,y]]
+{% endhighlight %}
 
 
 
-### Q-Learning Algorithm
+## Q-Learning Algorithm
 
 In the Q-learning algorithm, we learn the Q-value for the actions taken from a state. Q-value of an action is basically the expected future reward we can get if that action is taken from the current state. 
 
