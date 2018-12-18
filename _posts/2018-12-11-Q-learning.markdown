@@ -106,7 +106,7 @@ Here $$\gamma$$ is the discount factor and $$ R_{t+1} $$ is the Reward at time s
 The Q-function takes two inputs state and action and returns the expected future reward.
 In this algorithm, we experience the environment again and again like playing the game several times, every time an action is taken we update its Q-value which was set randomly initially. The update is performed according to the following equation :
 
-$$Q(S_t,A_t) = Q(S_t,A_t) + \alpha\times[ R + \gamma\times(max_aQ(S^{\prime} , a) - Q(S_t,A_t))]$$
+$$Q(S_t,A_t) = Q(S_t,A_t) + \alpha\times[ R + \gamma\times max_aQ(S^{\prime} , a) - Q(S_t,A_t)]$$
 
 Here $$\alpha$$ is the learning rate and $$\gamma$$ is the discount factor.
 
