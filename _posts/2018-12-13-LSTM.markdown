@@ -6,21 +6,21 @@ categories: jekyll update
 author: Akash Nair
 ---
 
-In this article, we will learn about a specific Recurrent Neural Network known as Long Short Term Memory Neural Network, or LSTMs in short. We will also be implementing a basic character to character RNN using LSTM using pyTorch.
+In this article, we will learn about a specific Recurrent Neural Network known as Long Short Term Memory Neural Network, or LSTMs in short. We will also be implementing a basic character to character LSTM using pyTorch.
 
 
 ## What is a Recurrent Neural Network and Why LSTMs?
 
 
 **Recurrent Neural Networks** are those Neural Networks that we use to process information that require us to keep informed of previous information.
-In simpler words, when we want a model to perform a certain category of tasks like speech recognition, music generation, machine translation, sentiment classification, etc, all of which invloves keeping track of previous information (like keeping track of all the words while processing a sentence during machine translation), a normal Neural Network cannot do this, while a Recurrent Neural Network, which persists the same information having loops in them addresses this issue.
+In simpler words, when we want a model to perform a certain category of tasks like speech recognition, music generation, machine translation, sentiment classification, etc, all of which invloves keeping track of previous information (like keeping track of all the words while processing a sentence during machine translation), a normal Neural Network cannot do this, while a Recurrent Neural Network, which keeps a track of the past information in it's internal state addresses this issue.
 
 |Recurrent Neural Network - Unrolled|
 |:-------------------------------------------------:|
-|![RNN](/assets/RNN.png){:height="75%" width="75%"}|
+|![RNN](/assets/RNN.png)|
 
 
-The above diagram is that of a basic Recurrent Neural Network, the chained structure is appropriate for sequence models and using this structure for Neural Networks have proven to work for the above mentioned applications. LSTMs come into play when a certain problem occurs within RNNs itself.
+The above diagram is that of a basic Recurrent Neural Network, the chained structure is appropriate for modeling sequences and using this structure for Neural Networks have proven to work for the above mentioned applications. LSTMs come into play when a certain problem occurs within RNNs itself.
 
 #### **Problem of Vanishing Gradients due to Long Term Dependencies** 
 
@@ -35,15 +35,15 @@ This is where LSTMs come into play!
 
 |Long Short Term Memory Network|
 |:-------------------------------------------------:|
-|![LSTM](/assets/LSTM.png){:height="75%" width="75%"}|
+|![LSTM](/assets/LSTM.png)|
 
-This is how an LSTM looks like, it follows the same chain like structure like that of the RNNs, but it contains several added layers. It may seem difficult to process this as a whole, but we'll walk through this step by step.
+This is how an LSTM looks like, it follows the same chain like structure like that of the RNNs, but it contains several added gates. It may seem difficult to process this as a whole, but we'll walk through this step by step.
 
 
 **Note**: The sigmoid function returns a value between 0 to 1 and this case, values very close to either 0 or 1 and hence is commonly used in our gates to make a particular decision.
 
 
-The following are layers involved in an LSTM cell:
+The following are states and gates involved in an LSTM cell:
 1. **Activation layer**: This layer consists of the activation values like the normal RNNs do
 2. **Memory Cell** or **Candidate layer**: This layer is involved in keeping track of dependencies
 3. **Update Gate**: Sigmoid function that decides whether or not the memory cell should keep track of the dependecy
@@ -52,7 +52,7 @@ The following are layers involved in an LSTM cell:
 
 |LSTM Structure Inside|
 |:-------------------------------------------------:|
-|![LSTM2](/assets/LSTM2.png){:height="75%" width="75%"}|
+|![LSTM2](/assets/LSTM2.png)|
 
 If the diagram is overwhelming, the following equations may help you to walk through the process.
 
@@ -71,14 +71,14 @@ $$\Gamma_{o} = \sigma(  W_{o}[ a^{<t-1>},x^{<t>} ] + b_o  )$$
 
 $$c^{<t>} = \Gamma_{u}*\hat{c}^{<t>} + \Gamma_{f}*c^{<t-1>}$$
 
-Here, we decide what exactly to update into the memory cell, which either retains the dependency from earlier or updates it to a new value based on the decision made by the update and forget gates. Hence,, the output will be filtered. This is done by running a sigmoid function layer to decide which parts of the memory cell we will send to the output and while the memory cells will be passed through tanh and then passed through the output gate to get only the filtered output. Here, our memory cells are updated appropriately. 
+Here, we decide what exactly to update into the memory cell, which either retains the dependency from earlier or updates it to a new value based on the decision made by the update and forget gates. Hence, the output will be filtered. This is done by running a sigmoid function layer to decide which parts of the memory cell we will send to the output and while the memory cells will be passed through tanh and then passed through the output gate to get only the filtered output. Here, our memory cells are updated appropriately. 
 
 $$a^{<t>} = \Gamma_{o}*tanh(c^{<t>})$$
 
 The activation layer is influenced by certain memory cell values decided upon by the output gate, and is appropriately updated and passed onto the next cell.
 
 
-The resultant $$\hat{y}^{<t>}$$ vector is obtained by passing the activation layer through a softmax function.
+The resultant $$\hat{y}^{<t>}$$ vector is obtained by passing the activation layer through a softmax function, but do note that this step is dependent on what problem we're solving and isn't part of the general LSTM framework.
 
 Now that we have a rough idea of how a basic LSTM works, we can move on to implementing a character to character model to predict text.
 
