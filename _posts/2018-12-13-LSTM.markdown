@@ -1,0 +1,387 @@
+---
+layout: post
+title:  "Long Short Term Memory Networks"
+date:   2018-12-13 10:10:04 +0400
+categories: jekyll update
+author: Akash Nair
+---
+
+In this article, we will learn about a specific Recurrent Neural Network known as Long Short Term Memory Neural Network, or LSTMs in short. We will also be implementing a basic character to character LSTM using pyTorch.
+
+
+## What is a Recurrent Neural Network and Why LSTMs?
+
+
+**Recurrent Neural Networks** are those Neural Networks that we use to process information that require us to keep informed of previous information.
+In simpler words, when we want a model to perform a certain category of tasks like speech recognition, music generation, machine translation, sentiment classification, etc, all of which invloves keeping track of previous information (like keeping track of all the words while processing a sentence during machine translation), a normal Neural Network cannot do this, while a Recurrent Neural Network, which keeps a track of the past information in it's internal state addresses this issue.
+
+|Recurrent Neural Network - Unrolled|
+|:-------------------------------------------------:|
+|![RNN](/assets/RNN.png)|
+
+
+The above diagram is that of a basic Recurrent Neural Network, the chained structure is appropriate for modeling sequences and using this structure for Neural Networks have proven to work for the above mentioned applications. LSTMs come into play when a certain problem occurs within RNNs itself.
+
+#### **Problem of Vanishing Gradients due to Long Term Dependencies** 
+
+Consider the following small sentence:`She was riding her cycle`. Predicting the word 'her' using RNNs is relatively easy since it just has to process the immediate words next to it, but predicting some sort of information that requires some sort of context from earlier, for example, mentioning `I am from France` in the beginning of a paragraph, but having to predict the language that was spoken much later in the text. Here, as the gap between relevant information grows, it becomes difficult for RNNs to connect both information to make a valid prediction. This happens because while calculating gradients for the weights during backpropagation, the values from one end of the sequence may find it difficult to influence that in other ends of the sequence which may or may not play an important role in prediction. This is the case in normal RNNs, where 'long range dependencies' are not really supported.
+
+
+This is where LSTMs come into play!
+
+## Long Short Term Memory Networks
+
+**Long Short Term Memory Networks** (usually just called `LSTMs`) are a _special kind_ of RNN, capable of learning long-term dependencies. They were introduced by Hochreiter & Schmidhuber (1997). They are explicitly designed to avoid the long-term dependency problem by remembering information for long periods of time, and this is possible by introducing 'memory cells' which keep track of these dependencies throughout the sequence.
+
+|Long Short Term Memory Network|
+|:-------------------------------------------------:|
+|![LSTM](/assets/LSTM.png)|
+
+This is how an LSTM looks like, it follows the same chain like structure like that of the RNNs, but it contains several added gates. It may seem difficult to process this as a whole, but we'll walk through this step by step.
+
+
+**Note**: The sigmoid function returns a value between 0 to 1 and this case, values very close to either 0 or 1 and hence is commonly used in our gates to make a particular decision.
+
+
+The following are states and gates involved in an LSTM cell:
+1. **Activation layer**: This layer consists of the activation values like the normal RNNs do
+2. **Memory Cell** or **Candidate layer**: This layer is involved in keeping track of dependencies
+3. **Update Gate**: Sigmoid function that decides whether or not the memory cell should keep track of the dependecy
+4. **Forget Gate**: Sigmoid function that decides whether or not the memory cell should leave or forget the dependency
+5. **Output Gate**: Sigmoid function that helps us filter what parts of the memory cell layer we want to pass into the output
+
+|LSTM Structure Inside|
+|:-------------------------------------------------:|
+|![LSTM2](/assets/LSTM2.png)|
+
+If the diagram is overwhelming, the following equations may help you to walk through the process.
+
+$$\hat{c}^{<t>} = tanh(  W_{c}[ a^{<t-1>},x^{<t>} ] + b_c  )$$
+
+This is the calculation for a memory cell initially which takes into account the previous activation layer and input layers' weights, and adds it to a bias, while passing the resultant to a tanh function that returns a score between -1 and 1, which in turn carries a dependency.
+
+
+$$\Gamma_{u} = \sigma(  W_{u}[ a^{<t-1>},x^{<t>} ] + b_u  )$$
+
+$$\Gamma_{f} = \sigma(  W_{f}[ a^{<t-1>},x^{<t>} ] + b_f  )$$
+
+Here, the decision is made whether or not to keep track of the dependency with the help of the update and forget gates, which are sigmoid layers.
+
+$$\Gamma_{o} = \sigma(  W_{o}[ a^{<t-1>},x^{<t>} ] + b_o  )$$
+
+$$c^{<t>} = \Gamma_{u}*\hat{c}^{<t>} + \Gamma_{f}*c^{<t-1>}$$
+
+Here, we decide what exactly to update into the memory cell, which either retains the dependency from earlier or updates it to a new value based on the decision made by the update and forget gates. Hence, the output will be filtered. This is done by running a sigmoid function layer to decide which parts of the memory cell we will send to the output and while the memory cells will be passed through tanh and then passed through the output gate to get only the filtered output. Here, our memory cells are updated appropriately. 
+
+$$a^{<t>} = \Gamma_{o}*tanh(c^{<t>})$$
+
+The activation layer is influenced by certain memory cell values decided upon by the output gate, and is appropriately updated and passed onto the next cell.
+
+
+The resultant $$\hat{y}^{<t>}$$ vector is obtained by passing the activation layer through a softmax function, but do note that this step is dependent on what problem we're solving and isn't part of the general LSTM framework.
+
+Now that we have a rough idea of how a basic LSTM works, we can move on to implementing a character to character model to predict text.
+
+## Character to Character LSTM Model
+
+We are going to use a two layer LSTM model with 512 hidden nodes in each layer. We will make the model read a text file that contains text from a transcript, in this example we will make the model read an exerpt from 'The Outcasts', we will then use the same sequence but shifted by one character as a target. 
+
+Before we get started, here are some key terms to get used to:
+
+1. **Vocabulary**: This is a set of every character that our model requires
+2. **LSTM Cell** : We will make use of pyTorch's LSTM cell that has the structure, as explained earlier
+3. **Hidden State or Activation State**: This is a vector of size(batch_size, hidden_size), the bigger dimension of the hidden_size, the more robust our model becomes but at the expense of computational cost. This vector acts as our short-term memory and is updated by the input at the time step t.
+4. **Layers of an LSTM**: We can stack LSTM cells on top of each other to obtain a layered LSTM model. This is done by passing the output of the first LSTM cell from the input to the second LSTM cell at any given time t, this gives a deeper network.
+
+Getting Started, first we load our text file and encode the text with integers.
+
+``` python 
+
+with open('./The Outcasts.txt', 'r') as f:
+    text = f.read()
+
+characters = tuple(set(text))
+
+int2char = dict(enumerate(characters)) 	# enumerate gives the characters their integer values
+char2int = {char: index for index, char in int2char.items()} 	# create the dictionary from characters to assigned integers
+encoded = np.array([char2int[char] for char in text]) 	# encode text using character to integer dictionary
+
+```
+Now, we require an algorithm to make batches that can be passed into our model, hence a batching function is required. Here we also set our targets shifted by one, so we can pass it into our model to process it.
+
+``` python
+
+def get_batches(arr, n_seqs, n_characters):
+    '''
+       arr: Array to make batches from
+       n_seqs: number of sequences per batch
+       n_steps: number of sequence steps per batch
+    '''
+    
+    batch_size = n_seqs * n_characters
+    n_batches = len(arr)//batch_size
+    
+    # Keep only enough characters to make full batches
+    arr = arr[:n_batches * batch_size]
+    # Reshape into n_seqs rows
+    arr = arr.reshape((n_seqs, -1))
+    
+    for n in range(0, arr.shape[1], n_characters):
+        # The features
+        x = arr[:, n:n+n_characters]
+        # The targets, shifted by one
+        y = np.zeros_like(x)
+        try:
+            y[:, :-1], y[:, -1] = x[:, 1:], arr[:, n+n_characters]
+        except IndexError:
+            y[:, :-1], y[:, -1] = x[:, 1:], arr[:, 0]
+yield x, y
+
+```
+Now we will build our model, by making an LSTM cell class to define the cells for both layers in our LSTM model. We'll also initialize the hidden/activation and memory cell states to tensors of zeros to pass to the first LSTM cell in the sequence. For this, we will use the nn module by pyTorch.
+This will also involve the forward propagation.
+
+``` python
+
+class CharLSTM(nn.ModuleList):
+    def __init__(self, sequence_len, vocab_size, hidden_dim, batch_size):
+        super(CharLSTM, self).__init__()
+        
+        # init the parameters
+        self.hidden_dim = hidden_dim
+        self.batch_size = batch_size
+        self.sequence_len = sequence_len
+        self.vocab_size = vocab_size
+        
+        # first lstm cell
+        self.lstm_1 = nn.LSTMCell(input_size=vocab_size, hidden_size=hidden_dim)
+        
+        # second lstm cell
+        self.lstm_2 = nn.LSTMCell(input_size=hidden_dim, hidden_size=hidden_dim) 
+        
+        # dropout layer for the output of the second lstm cell
+        self.dropout = nn.Dropout(p=0.5)
+        
+        # This layer connects the output of the LSTM cell to the output layer, named as fc because it 'fully connects' the LSTM cell to output
+        self.fc = nn.Linear(in_features=hidden_dim, out_features=vocab_size)
+        
+    def forward(self, x, hc):
+        '''
+            x: input to the model                
+            hc: hidden/activation and memory cell states
+        '''
+        
+        # empty tensor for the output
+        output_seq = torch.empty((self.sequence_len, self.batch_size, self.vocab_size))
+        
+        # initialize both LSTM cells with zero hidden/activation and memory cell states
+        hc_1, hc_2 = hc, hc
+        
+        # for every step in the sequence
+        for t in range(self.sequence_len):
+            
+            # get the hidden and cell states from the first cell
+            hc_1 = self.lstm_1(x[t], hc_1)
+            
+            # unpack from the first LSTM cell
+            h_1, c_1 = hc_1
+        
+            # pass into the second LSTM cell
+            hc_2 = self.lstm_2(h_1, hc_2)
+            
+            # unpack from the Second cell
+            h_2, c_2 = hc_2
+        
+            # form the output of the fully connected layer
+            output_seq[t] = self.fc(self.dropout(h_2))
+        
+        # return the output sequence
+        return output_seq.view((self.sequence_len * self.batch_size, -1))
+          
+    def init_hidden(self):
+        
+        # initialize the hidden state and the cell state to zeros
+        return (torch.zeros(self.batch_size, self.hidden_dim),torch.zeros(self.batch_size, self.hidden_dim))
+
+```
+Now that we defined our model, we will move forward with training it on our loaded data, we will also monitor our losses with the help of basic validation sets.
+Here, net will be the model object, and we will decide our optimizer (Adam optimizer is used in this case) and our loss function(Cross entropy loss function is used).
+
+
+You may also notice we will be using the contiguous function, it is called in order to make the memory block continuous so the view function can operate (it will not happen if the memory block has holes in it). The memory layout sometimes becomes misaligned so we need to use contiguous at some places to realign the memory.
+
+``` python
+net = CharLSTM(sequence_len=128, vocab_size=len(char2int), hidden_dim=512, batch_size=128)
+
+# define the loss and the optimizer
+optimizer = optim.Adam(net.parameters(), lr=0.001)
+lossfunc = nn.CrossEntropyLoss()
+
+val_idx = int(len(encoded) * (1 - 0.1))
+data, val_data = encoded[:val_idx], encoded[val_idx:]
+
+# empty list for validation losses
+val_losses = list()
+
+# empty list for samples
+samples = list()
+
+for epoch in range(10):
+    
+    
+    hc = net.init_hidden()
+    
+    for i, (x, y) in enumerate(get_batches(data, 128, 128)):
+        
+        # get the torch tensors from the one-hot of training data
+        # also transpose the axis for the training set and the targets
+        x_train = torch.from_numpy(to_categorical(x, num_classes = net.vocab_size).transpose([1, 0, 2]))
+        targets = torch.from_numpy(y.T).type(torch.LongTensor)  # tensor of the target
+        
+        # zero out the gradient values
+        optimizer.zero_grad()
+        
+        # get the output sequence from the input, activation and memory cell states
+        output = net(x_train, hc)
+    
+        # calculate the loss
+        # we need to calculate the loss across all batches
+        loss = lossfunc(output, targets.contiguous().view(128*128))
+        
+        # calculate the gradients
+        loss.backward()
+        
+        # update the parameters of the model
+        optimizer.step()
+    
+        # feedback every 10 batches
+        if i % 10 == 0: 
+            
+            # initialize the validation hidden state and cell state
+            val_h, val_c = net.init_hidden()
+            
+            for val_x, val_y in get_batches(val_data, 128, 128):
+                
+                # prepare the validation inputs and targets
+                val_x = torch.from_numpy(to_categorical(val_x).transpose([1, 0, 2]))
+                val_y = torch.from_numpy(val_y.T).type(torch.LongTensor).contiguous().view(128*128)
+            
+                # get the validation output
+                val_output = net(val_x, (val_h, val_c))
+                
+                # get the validation loss
+                val_loss = lossfunc(val_output, val_y)
+                
+                # append the validation loss
+                val_losses.append(val_loss.item())
+                
+                # sample 256 chars
+                samples.append(''.join([int2char[int_] for int_ in net.predict("A", seq_len=1024)]))
+                
+print("Epoch: {}, Batch: {}, Train Loss: {:.6f}, Validation Loss: {:.6f}".format(epoch, i, loss.item(), val_loss.item()))
+
+```
+
+Our predict function, given a character, must predict the next character and return it, along with the hidden/activation state.
+Hence, this will give us our output for our model.
+
+``` python
+
+def init_hidden_predict(self):
+        
+        # initialize hidden/activation and memory cell to zeros
+        # batch size is 1
+        return (torch.zeros(1, self.hidden_dim), torch.zeros(1, self.hidden_dim))
+    
+    def predict(self, char, top_k=5, seq_len=128):
+        
+        self.eval()
+        
+        # placeholder for the generated text
+        seq = np.empty(seq_len+1)
+        seq[0] = char2int[char]
+        
+        hc = self.init_hidden_predict()
+        
+        # now we need to encode the character - (1, vocab_size)
+		# to_categorical is used from the keras library to hot one code
+        char = to_categorical(char2int[char], num_classes=self.vocab_size)
+        
+        # add the batch dimension
+        char = torch.from_numpy(char).unsqueeze(0)
+        
+        # now we need to pass the character to the first LSTM cell to obtain 
+        # the predictions on the second character
+        hc_1, hc_2 = hc, hc
+        
+        
+        for t in range(seq_len):
+            
+            # get the hidden/activation and memory states from the first and second LSTM cells	
+            hc_1 = self.lstm_1(char, hc_1)
+            h_1, _ = hc_1
+            
+            hc_2 = self.lstm_2(h_1, hc_2)
+            h_2, _ = hc_2            
+            
+            # pass the output of the cell through fully connected layer
+            h_2 = self.fc(h_2)
+            
+            # apply the softmax to output to get the probabilities of the characters
+            h_2 = F.softmax(h_2, dim=1)
+            
+            # h_2 now holds the vector of predictions (1, vocab_size)
+            # we want to sample 5 top characters
+            p, top_char = h_2.topk(top_k)
+            
+            # get the top k characters by their probabilities
+            top_char = top_char.squeeze().numpy()
+            
+            # sample a character using its probability
+            p = p.detach().squeeze().numpy()
+            char = np.random.choice(top_char, p = p/p.sum())
+        
+            # append the character to the output sequence
+            seq[t+1] = char
+            
+            # prepare the character to be fed to the next LSTM cell
+            char = to_categorical(char, num_classes=self.vocab_size)
+            char = torch.from_numpy(char).unsqueeze(0)
+            
+        return seq
+
+```
+The model receives an “A” initially as an input to the LSTM cell at time t=0. After that, we get the output with the size of our vocabulary from the memory cell. If we apply softmax function to the output, we get the probabilities of the characters. Then we take 'k' most probable characters and then sample one character according to their probability in the space of these 'k' characters. This sampled character is now going to be input to the LSTM cell at time t=1, and so on.
+
+Always remember that pytorch expects batch dimensions everywhere, and don’t forget to convert numpy arrays into torch tensors and back to numpy again since we are dealing with integers in the end and we need them to look up actual characters.
+
+
+Here is some of the output while monitoring the losses during training:
+
+```
+Epoch: 0, Batch: 0, Train Loss: 4.375697, Validation Loss: 4.338589
+Epoch: 0, Batch: 5, Train Loss: 3.400858, Validation Loss: 3.402019
+Epoch: 1, Batch: 0, Train Loss: 3.239244, Validation Loss: 3.299909
+Epoch: 1, Batch: 5, Train Loss: 3.206378, Validation Loss: 3.262871
+.
+.
+.
+Epoch: 49, Batch: 0, Train Loss: 1.680400, Validation Loss: 2.052764
+Epoch: 49, Batch: 5, Train Loss: 1.701830, Validation Loss: 2.061397
+```
+
+Here is what the model learnt and generated in the first epoch:
+
+|First Epoch|
+|:-------------------------------------------------:|
+|![epoch1](/assets/sampleoutput1.png)|
+
+and this is the outcome after 50 epochs:
+
+|Fiftieth Epoch|
+|:-------------------------------------------------:|
+|![epoch50](/assets/sampleoutput2.png)|
+
+### Final Outcome
+
+We can see that the resulting sample that at the 50th epoch doesn’t make much sense, but it does show signs that the model has learned a lot, like some words, some sentence structure and syntax. Now all we need to do is to tweak the model’s hyper-parameters to make it better, and we will have a better character to character model than we started off with.
