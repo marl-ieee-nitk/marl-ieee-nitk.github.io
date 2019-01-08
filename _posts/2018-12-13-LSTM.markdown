@@ -2,7 +2,7 @@
 layout: post
 title:  "Long Short Term Memory Networks"
 date:   2018-12-13 10:10:04 +0400
-categories: jekyll update
+categories: Multi Agent Reinforcement Learning Blogs
 author: Akash Nair
 ---
 
