@@ -1,0 +1,93 @@
+---
+layout: post
+title:  "Deep Q-Networks"
+date:   2019-01-05 10:10:04 +0530
+categories: rl
+author: Akash Nair
+---
+
+In this article, we will learn about Deep Q-Networks and a basic implementation of it.
+
+## **Recap**
+
+## Q-Learning and some Formal Definitions 
+
+### What is a Policy?
+
+We can define **policy** as a map from states to actions, its the objective in reinforcement learning to find the optimal policy, and this optimal policy can be derived from a Q function.
+
+### Return / Future Total Reward
+
+We define return as the sum of all immediate rewards on a particular episode, ie, the sum of rewards up until the episode finish.
+
+### Future Discounted Reward
+
+We add to our total reward a parameter called gamma ( $$ \gamma $$ ). If $$ \gamma $$ = 0, all future rewards will be discarded otherwise they will be considered. 
+We can interpret this parameter as in terms of how much we value our future rewards compared to our current reward.
+
+### What is an Episode?
+
+Our environment is based on an MDP (Markov Decision Process) which means that our state encodes everything needed to take a decision by defining an episode as a finite set of states, actions and rewards.
+Here, we get a reward taking the action from a state and an episode always finishes on an end/final state.
+
+### Q function
+
+We define the function $$ Q_{(s,a)} $$ as maximum expected return that we can get if we take an action $$ a $$ on state $$ s $$, and continue optimally from that point until the end of the episode which means that we continue choosing actions from the policy derived from Q.
+
+Below we see how the Q function, basically updates to give the biggest Q value on state $$ s $$.
+Every time an action is taken we update its Q-value:
+
+$$Q(S_t,A_t) = Q(S_t,A_t) + \alpha\times[ R + \gamma\times max_aQ(S^{\prime} , a) - Q(S_t,A_t)]$$
+
+Here $$\alpha$$ is the learning rate and $$\gamma$$ is the discount factor.
+
+### Greedy policy
+
+If we choose an action that simply maximizes the return every time, this causes a problem. It becomes a pure greedy algorithm and prevents exploration from happening which may give you better options of finding better actions. This is called exploration-exploitation problem and to solve this we use an algorithm called Epsilon Greedy Algorithm, where a small probability will choose a completely random action from time to time.
+
+## Deep Q-Networks
+
+|DQN|
+|:-------------------------------------------------:|
+|![DQN](/assets/dqn.png)|
+
+A **Deep Q Neural Network**, instead of using a Q-table, a Neural Network basically takes a state and approximates Q-values for each action based on that state. This involves parametrizing the Q values.
+
+To explain further, tabular Q-Learning creates and updtaes a Q-Table, given a state, to find maximum return. This is however not scalable, and hence we need an efficient way for Q-Learning to function in an environment with many states and actions. The best idea in this case is to create a neural network that will approximate, given a state, the different Q-values for each action.
+
+|Difference between Q-Learning and DQN|
+|:-------------------------------------------------:|
+|![DQN2](/assets/dqn2.png)|
+
+Here, our model will still implement the same Bellman Equation, but here the Neural Network updates the weights by taking the difference between our Q_target (maximum possible value from the next state) and Q_value (our current prediction of the Q-value) in order to reduce the errors in weights.
+
+$$ \Delta w = \alpha[(R + \gamma max_a \hat{Q}(s',a,w)) - \hat{Q}(s,a,w)]\Delta_w \hat{Q}(s,a,w)  $$
+
+And, we have our Loss Function as the Squared Error between target Q-value and the Q-value output from the network.
+
+
+### Convolutional Layers
+
+If our agent is going to be learning to play certain games, it has to be able to make sense of the game’s screen output, and instead of considering each pixel independently, **convolutional layers** allow us to consider regions of an image and maintain spatial relationships between the objects on the screen as we send information up to higher levels of the network. 
+In this way, they act similarly to how humans percieve the screen. Hence, they are ideal for the first few elements within our network.
+
+### Experience Replay
+
+The idea of **Experience Replay** is that by storing an agent’s experiences, and randomly drawing batches of them to train the network, we can more robustly learn to perform well in the task. By keeping the experiences we draw random, we prevent the network from only learning about what it was immediately doing in the environment, and allow it to learn from many of it's past experiences as well. Each of these experiences are stored as tuples of [ state , action , reward , next state ]. 
+The Experience Replay buffer stores a fixed number of recent memories, and as new ones come in, old ones are removed. 
+When the time comes to train, we simply draw a uniform batch of these random memories from the buffer, and train our network with them. 
+
+### Separate Target Network
+
+DQNs utilize a second network during the training procedure. 
+This second network is used to generate the target-Q values that will be used to compute the loss for every action during training. One may ask, why not use just use one network for both estimations? An issue arises that at every step of training, the Q-network’s values shift, and if we are using a constantly shifting set of values to adjust our network values, then the value estimations can easily go out of control and cause errors in calculation. 
+
+
+The network can become destabilized by falling into feedback loops between the target and estimated Q-values. In order to prevent this risk, the target network’s weights are fixed, and only updated periodically to the primary Q-networks values. 
+In this way, training happens in a stable manner.
+
+Here is the complete DQN Algorithm with Experience Replay:
+
+|DQN Algorithm|
+|:-------------------------------------------------:|
+|![Algo](/assets/algo.png)|
