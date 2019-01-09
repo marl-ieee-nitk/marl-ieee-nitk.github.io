@@ -14,7 +14,7 @@ In this article, we will learn about Deep Q-Networks and a basic implementation 
 
 ### What is a Policy?
 
-We can define **policy** as a map from states to actions, its the objective in reinforcement learning to find the optimal policy, and this optimal policy can be derived from a Q function.
+We can define **policy** as a mapping from states to actions, its the objective in reinforcement learning to find the optimal policy, which is defined as the policy which maximises the return.
 
 ### Return / Future Total Reward
 
@@ -32,7 +32,7 @@ Here, we get a reward taking the action from a state and an episode always finis
 
 ### Q function
 
-We define the function $$ Q_{(s,a)} $$ as maximum expected return that we can get if we take an action $$ a $$ on state $$ s $$, and continue optimally from that point until the end of the episode which means that we continue choosing actions from the policy derived from Q.
+We define the function $$ Q_{(s,a)} $$ as maximum expected return that we can get if we take an action $$ a $$ on state $$ s $$, and continue from that point until the end of the episode which means that we continue choosing actions from the policy derived from Q.
 
 Below we see how the Q function, basically updates to give the biggest Q value on state $$ s $$.
 Every time an action is taken we update its Q-value:
