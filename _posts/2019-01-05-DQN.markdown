@@ -2,7 +2,7 @@
 layout: post
 title:  "Deep Q-Networks"
 date:   2019-01-05 10:10:04 +0530
-categories: rl
+categories: deep-reinforcement-learning
 author: Akash Nair
 ---
 

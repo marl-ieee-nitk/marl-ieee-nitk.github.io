@@ -2,7 +2,7 @@
 layout: post
 title:  "Introduction to Q-learning!"
 date:   2018-12-11 11:42:04 +0530
-categories: Multi Agent Reinforcement Learning Blogs
+categories: reinforcement-learning
 author: Madhuparna Bhowmik
 ---
 
