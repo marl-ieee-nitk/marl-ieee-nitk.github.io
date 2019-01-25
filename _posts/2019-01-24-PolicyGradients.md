@@ -2,7 +2,7 @@
 layout: post
 title:  "Policy Gradients"
 date:   2019-01-24 11:42:04 +0530
-categories: Multi Agent Reinforcement Learning Blogs
+categories: Reinforcement Learning
 author: Madhuparna Bhowmik
 ---
 
