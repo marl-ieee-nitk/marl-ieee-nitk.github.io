@@ -10,15 +10,15 @@ In this article, we will learn about Policy Gradients and implement it in Pytorc
 
 ## Introduction
 
-Policy Gradients method is a model-free Reinforcement Learning algorithm that directly approximates the Policy. 
+Policy Gradients are a family of model-free reinforcement learning algorithms. 
 
-In the previous blog posts, we saw Q-learning based algorithms like DQN and DRQNs where given a state we were finding the Q-values of the possible actions where the Q-values are the expected reward we can get from that state if that action is selected. And we were using an epsilon-greedy strategy to select the action. However, in Policy Gradients method instead of approximating the action value function, we are directly learning the optimal policy. 
+In the previous blog posts, we saw Q-learning based algorithms like DQN and DRQNs where given a state we were finding the Q-values of the possible actions where the Q-values are the expected return for the episode we can get from that state if that action is selected. And we were using an epsilon-greedy strategy to select the action. However, in Policy Gradients method instead of approximating the action value function, we are directly learning the optimal policy. 
 
 ## Advantages of Policy Gradient Method
 
 1.Better Convergence properties.
 
-2.Continuous Action Space - We cannot use Q-learning based methods for environments having Continuous action space. However, policy gradient methods like DDPG ( Deep deterministic Policy Gradients ) can be used for such cases.
+2.Continuous Action Space - We cannot use Q-learning based methods for environments having Continuous action space. However, policy gradient methods can be used for such cases.
 
 3.Policy Gradients can learn Stochastic policies.
 As we will see in the Implementation details section that we choose the action stochastically and hence we need not use something like an epsilon-greedy strategy that we used in Q-learning, the policy will itself be stochastic.
@@ -37,7 +37,7 @@ So, in general, classification problems, we have a loss function, and our object
 
 $$J(θ)= \underset{t \sim \pi _\theta}E[R(\tau) ]$$
 
-Here, the policy is parametrized by $$\theta$$, and $$J(\theta)$$ is the reward function.
+Here, the policy is parametrized by $$\theta$$, and $$J(\theta)$$ is the return and R is the reward.
 Now we need to find the Gradient of this function with respect to the parameters of the policy *theta* so that we can perform the parameter update as follows:-
 
 $$ \theta = \theta + \alpha \times \Delta J(\theta)$$
@@ -140,7 +140,6 @@ def PolicyGradient(numepisodes):
         state = env.reset()
         steps = 0
         states.append(state)
-        rr=0
         while done != True and steps<1500:
             steps+=1
             inp = torch.from_numpy(state).unsqueeze(0)
@@ -153,7 +152,6 @@ def PolicyGradient(numepisodes):
             actions.append(action)
             rewards.append(reward)
             rew+=reward
-            rr+=reward
         max_reward = max(max_reward,rr)
         optimizer.zero_grad()
         loss_sum =0
