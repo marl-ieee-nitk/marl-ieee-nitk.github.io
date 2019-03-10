@@ -3,18 +3,8 @@ layout: post
 title: "Solving Switch Riddle using RL"
 author_github: Madhuparna04
 date: 2019-02-28
-image: '/assets/img/'
-description: ''
-tags:
-- Switch Riddle
-- Reinforcement Learning
-- DIAL
-- RNN
-categories:
-- Compsoc
-github_username: 'Madhuparna04'
-use_math: true
-comments: false
+categories: Reinforcement Learning
+author: Madhuparna Bhowmik
 ---
 
 In this article, we will use a Reinforcement Learning based method to solve the Switch Riddle problem. So, let's start with defining the riddle.
