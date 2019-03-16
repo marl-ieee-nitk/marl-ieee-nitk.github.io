@@ -3,7 +3,7 @@ layout: post
 title: "Solving Switch Riddle using RL"
 author_github: Madhuparna04
 date: 2019-02-28
-categories: Reinforcement Learning
+categories: reinforcement-learning
 author: Madhuparna Bhowmik
 ---
 
@@ -12,7 +12,7 @@ In this article, we will use a Reinforcement Learning based method to solve the 
 
 ## Switch Riddle
 
-There are n prisoners in prison and a warden. The Warden decides to free the prisoners if they can solve the following problem. So, every day the Warden will select one of the prisoners and send him to an interrogation room which consists of a light bulb with a switch. If the prisoner in the room can tell that all other prisoners including him have been to the room at least once then the Warden will free all of them otherwise kill all of them.
+There are n prisoners in prison and a warden. The Warden decides to free the prisoners if they can solve the following problem. So, every day the Warden will select one of the prisoners randomly and send him to an interrogation room which consists of a light bulb with a switch. If the prisoner in the room can tell that all other prisoners including him have been to the room at least once then the Warden will free all of them otherwise kill all of them.
 Except for the prisoner in the room, other prisoners are unaware of the fact that who got selected on that particular day to go to the interrogation room.
 
 ![Switch Riddle](/assets/SwitchRiddle.png "Switch Riddle")
@@ -20,14 +20,14 @@ Except for the prisoner in the room, other prisoners are unaware of the fact tha
 
 [Image Source](https://github.com/iassael/learning-to-communicate)
 
-Now, the prisoner in the interrogation room can switch on or off the bulb to send some indication to the next prisoner. He can also tell the warden that everyone has been to the room at least once or decide not to say anything. If his claim is correct, then all are set free otherwise no.
+Now, the prisoner in the interrogation room can switch on or off the bulb to send some indication to the next prisoner. He can also tell the warden that everyone has been to the room at least once or decide not to say anything. If his claim is correct, then all are set free otherwise they are all killed.
 
 ## Problem Formulation
 
-So we see that the switch riddle problem consists of many prisoners trying to establish a single task. Therefore, the puzzle fits in a Multi-Agent setup where the agents are collaborating to complete the task.
-We will use a Reinforcement learning based algorithms called the **DIAL( Differential Inter Agent Learning)** to solve this riddle.
+We can observe that switch riddle problem comprises of multiple agents working towards completing a single task. Therefore, the puzzle fits in a Multi-Agent setup where the agents are collaborating to complete the task.
+We will use a Deep Reinforcement learning based algorithms called the **DIAL( Differential Inter Agent Learning)** to solve this riddle.
 
-The things that we need to define for most of the RL tasks are states, actions, and rewards. So let's formulate these:
+The things that we need to define for most RL problems are states, actions, and rewards. So let's formulate these:
 
 #### State
 The state for each agent or prisoner is whether the agent is in the interrogation room or not, i.e., if the prisoner n is in the room, then he receives a 1 and others 0 for that particular day or time step.
